@@ -1,14 +1,14 @@
 
 from sdks.novavision.src.helper.package import PackageHelper
-from components.Package.src.models.PackageModel import PackageModel, PackageConfigs, ConfigExecutor, PackageOutputs, PackageResponse, PackageExecutor, OutputImage
+from capsules.PpeDetection.src.models.PackageModel import PackageConfigs, ConfigExecutor, PPEExecutor, PackageModel, PPEResponse, PPEOutputs, OutputDetections
 
 
 def build_response(context):
-    outputImage = OutputImage(value=context.image)
-    Outputs = PackageOutputs(outputImage=outputImage)
-    packageResponse = PackageResponse(outputs=Outputs)
-    packageExecutor = PackageExecutor(value=packageResponse)
-    executor = ConfigExecutor(value=packageExecutor)
+    outputDetections = OutputDetections(value=context.detection)
+    ppeOutputs = PPEOutputs(outputDetections=outputDetections)
+    pperesp = PPEResponse(outputs=ppeOutputs)
+    ppeExecutor = PPEExecutor(value=pperesp)
+    executor = ConfigExecutor(value=ppeExecutor)
     packageConfigs = PackageConfigs(executor=executor)
     package = PackageHelper(packageModel=PackageModel, packageConfigs=packageConfigs)
     packageModel = package.build_model(context)

@@ -1,28 +1,11 @@
 
 from pydantic import Field, validator
 from typing import List, Optional, Union, Literal
-from sdks.novavision.src.base.model import Package, Image, Inputs, Configs, Outputs, Response, Request, Output, Input, Config
+from sdks.novavision.src.base.model import Detection, Package, Inputs, Configs, Outputs, Response, Request, Output, Input, Config,Image
 
 
 class InputImage(Input):
     name: Literal["inputImage"] = "inputImage"
-    value: Union[List[Image], Image]
-    type: str = "object"
-
-    @validator("type", pre=True, always=True)
-    def set_type_based_on_value(cls, value, values):
-        value = values.get('value')
-        if isinstance(value, Image):
-            return "object"
-        elif isinstance(value, list):
-            return "list"
-
-    class Config:
-        title = "Image"
-
-
-class OutputImage(Output):
-    name: Literal["outputImage"] = "outputImage"
     value: Union[List[Image],Image]
     type: str = "object"
 
@@ -38,17 +21,46 @@ class OutputImage(Output):
         title = "Image"
 
 
-class KeepSideFalse(Config):
-    name: Literal["False"] = "False"
-    value: Literal[False] = False
-    type: Literal["bool"] = "bool"
-    field: Literal["option"] = "option"
+class Detection(Detection):
+    imgUID: str
+
+
+class OutputDetections(Output):
+    name: Literal["outputDetections"] = "outputDetections"
+    value: List[Detection]
+    type: Literal["list"] = "list"
 
     class Config:
-        title = "Disable"
+        title = "Detections"
 
 
-class KeepSideTrue(Config):
+class ConfigConfidentThreshold(Config):
+    """
+    (0.0-1.0) Represents the overlap threshold value.
+    """
+    name: Literal["ConfidentThreshold"] = "ConfidentThreshold"
+    value: float = Field(default=0.3, ge=0, le=1)
+    type: Literal["number"] = "number"
+    field: Literal["textInput"] = "textInput"
+
+    class Config:
+        title = "Confidence Threshold"
+
+
+class ConfigIOUThreshold(Config):
+    """
+    (0.0-1.0) Represents the overlap threshold value.
+    """
+    name: Literal["IOUThreshold"] = "IOUThreshold"
+    value: float = Field(default=0.3, ge=0, le=1)
+    type: Literal["number"] = "number"
+    field: Literal["textInput"] = "textInput"
+
+    class Config:
+        title = "IOU Threshold"
+
+
+class ConfigHalfTrue(Config):
     name: Literal["True"] = "True"
     value: Literal[True] = True
     type: Literal["bool"] = "bool"
@@ -58,49 +70,148 @@ class KeepSideTrue(Config):
         title = "Enable"
 
 
-class KeepSideBBox(Config):
+class ConfigHalfFalse(Config):
+    name: Literal["False"] = "False"
+    value: Literal[False] = False
+    type: Literal["bool"] = "bool"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Disable"
+
+
+class ConfigHalf(Config):
     """
-        Rotate image without catting off sides.
+        It enables half-precision (FP16) inference, which can speed up model inference.
     """
-    name: Literal["KeepSide"] = "KeepSide"
-    value: Union[KeepSideTrue, KeepSideFalse]
+    name: Literal["Half"] = "Half"
+    value: Union[ConfigHalfTrue, ConfigHalfFalse]
     type: Literal["object"] = "object"
     field: Literal["dropdownlist"] = "dropdownlist"
+    restart: Literal[True] = True
 
     class Config:
-        title = "Keep Sides"
+        title = "Half"
 
 
-class Degree(Config):
-    """
-        Positive angles specify counterclockwise rotation while negative angles indicate clockwise rotation.
-    """
-    name: Literal["Degree"] = "Degree"
-    value: int = Field(ge=-359.0, le=359.0,default=0)
-    type: Literal["number"] = "number"
-    field: Literal["textInput"] = "textInput"
-    placeHolder: Literal["[-359, 359]"] = "[-359, 359]"
+class ConfigDeviceGPU(Config):
+    name: Literal["ConfigDeviceGPU"] = "ConfigDeviceGPU"
+    configHalf: ConfigHalf
+    value: Literal["GPU"] = "GPU"
+    type: Literal["string"] = "string"
+    field: Literal["option"] = "option"
 
     class Config:
-        title = "Angle"
+        title = "GPU"
 
 
-class PackageInputs(Inputs):
+class ConfigDeviceCPU(Config):
+    name: Literal["ConfigDeviceCPU"] = "ConfigDeviceCPU"
+    value: Literal["CPU"] = "CPU"
+    type: Literal["string"] = "string"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "CPU"
+
+
+class ConfigDevice(Config):
+    """
+        It refers to whether the model should run on a CPU or a GPU.
+        You can select the device type for inference or training process.
+    """
+    name: Literal["ConfigDevice"] = "ConfigDevice"
+    value: Union[ConfigDeviceCPU, ConfigDeviceGPU]
+    type: Literal["object"] = "object"
+    field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
+    restart: Literal[True] = True
+
+    class Config:
+        title = "Device"
+
+
+class ConfigPPEWeights1(Config):
+    name: Literal["PPENano.pt"] = "PPENano.pt"
+    value: Literal["PPENano.pt"] = "PPENano.pt"
+    type: Literal["object"] = "object"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Personel Protective Equipment Model - Nano"
+
+
+class ConfigPPEWeights2(Config):
+    name: Literal["PPESmall.pt"] = "PPESmall.pt"
+    value: Literal["PPESmall.pt"] = "PPESmall.pt"
+    type: Literal["object"] = "object"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Personel Protective Equipment Model - Small"
+
+
+class ConfigPPEWeights3(Config):
+    name: Literal["PPEMedium.pt"] = "PPEMedium.pt"
+    value: Literal["PPEMedium.pt"] = "PPEMedium.pt"
+    type: Literal["object"] = "object"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Personel Protective Equipment Model - Medium"
+
+
+class ConfigPPEWeights4(Config):
+    name: Literal["PPELarge.pt"] = "PPELarge.pt"
+    value: Literal["PPELarge.pt"] = "PPELarge.pt"
+    type: Literal["object"] = "object"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Personel Protective Equipment Model - Large"
+
+
+class ConfigPPEWeights5(Config):
+    name: Literal["PPEX.pt"] = "PPEX.pt"
+    value: Literal["PPEX.pt"] = "PPEX.pt"
+    type: Literal["object"] = "object"
+    field: Literal["option"] = "option"
+
+    class Config:
+        title = "Personel Protective Equipment Model - Extra Large"
+
+
+class PPEConfigWeights(Config):
+    """
+    It corresponds to weights of the models.
+    """
+    name: Literal["Weights"] = "Weights"
+    value: Union[ConfigPPEWeights1, ConfigPPEWeights2,ConfigPPEWeights3,ConfigPPEWeights4,ConfigPPEWeights5]
+    type: Literal["object"] = "object"
+    field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
+    restart: Literal[True] = True
+
+    class Config:
+        title = "Weights"
+
+
+class PPEInputs(Inputs):
     inputImage: InputImage
 
 
-class PackageConfigs(Configs):
-    degree: Degree
-    drawBBox: KeepSideBBox
+class PPEConfigs(Configs):
+    configWeights: PPEConfigWeights
+    configDevice: ConfigDevice
+    configConfidentThreshold: ConfigConfidentThreshold
+    configIOUThreshold: ConfigIOUThreshold
 
 
-class PackageOutputs(Outputs):
-    outputImage: OutputImage
+class PPEOutputs(Outputs):
+    outputDetections: OutputDetections
 
 
-class PackageRequest(Request):
-    inputs: Optional[PackageInputs]
-    configs: PackageConfigs
+class PPERequest(Request):
+    inputs: Optional[PPEInputs]
+    configs: PPEConfigs
 
     class Config:
         json_schema_extra = {
@@ -108,18 +219,18 @@ class PackageRequest(Request):
         }
 
 
-class PackageResponse(Response):
-    outputs: PackageOutputs
+class PPEResponse(Response):
+    outputs: PPEOutputs
 
 
-class PackageExecutor(Config):
-    name: Literal["Package"] = "Package"
-    value: Union[PackageRequest, PackageResponse]
+class PPEExecutor(Config):
+    name: Literal["PpeDetection"] = "PpeDetection"
+    value: Union[PPERequest, PPEResponse]
     type: Literal["object"] = "object"
     field: Literal["option"] = "option"
 
     class Config:
-        title = "Package"
+        title = "Personel Protective Equipment"
         json_schema_extra = {
             "target": {
                 "value": 0
@@ -129,7 +240,7 @@ class PackageExecutor(Config):
 
 class ConfigExecutor(Config):
     name: Literal["ConfigExecutor"] = "ConfigExecutor"
-    value: Union[PackageExecutor]
+    value: Union[PPEExecutor]
     type: Literal["executor"] = "executor"
     field: Literal["dependentDropdownlist"] = "dependentDropdownlist"
 
@@ -146,5 +257,5 @@ class PackageConfigs(Configs):
 
 class PackageModel(Package):
     configs: PackageConfigs
-    type: Literal["component"] = "component"
-    name: Literal["Package"] = "Package"
+    type: Literal["capsule"] = "capsule"
+    name: Literal["PpeDetection"] = "PpeDetection"
