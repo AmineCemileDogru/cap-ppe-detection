@@ -258,4 +258,4 @@ class PackageConfigs(Configs):
 class PackageModel(Package):
     configs: PackageConfigs
     type: Literal["capsule"] = "capsule"
-    name: Literal["PpeDetection"] = "PpeDetection"
+    name: Literal["PPE"] = "PPE"
