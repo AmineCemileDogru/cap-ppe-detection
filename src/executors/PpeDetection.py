@@ -11,8 +11,8 @@ from sdks.novavision.src.base.model import BoundingBox
 from sdks.novavision.src.helper.executor import Executor
 from capsules.PpeDetection.src.utils.utils import load_models
 from capsules.Yolov5.src.classes.yolov5_detect import Yolov5Detect
-from capsules.PpeDetection.src.utils.response import build_response
-from capsules.PpeDetection.src.models.PackageModel import PackageModel, Detection
+from capsules.PPE.src.utils.response import build_response
+from capsules.PPE.src.models.PackageModel import PackageModel, Detection
 
 
 class PpeDetection(Capsule):
